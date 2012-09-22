@@ -154,18 +154,18 @@ class Imap {
             }
 
             $msgArray = array(
-                "to" => $details->toaddress,
-                "from" => $details->fromaddress,
-                "cc" => $details->ccaddress,
-                "bcc" => $details->bbcaddress,
-                "reply_to" => $details->reply_toaddress,
-                "sender" => $details->senderaddress,
-                "datesent" => $details->date,
-                "subject" => $details->subject,
-                "deleted" => $deleted,
-                "answered" => $answered,
-                "draft" => $draft,
-                "body" => $body,
+                'to' => $details->toaddress,
+                'from' => $details->fromaddress,
+                'cc' => $details->ccaddress,
+                'bcc' => $details->bbcaddress,
+                'reply_to' => $details->reply_toaddress,
+                'sender' => $details->senderaddress,
+                'datesent' => $details->date,
+                'subject' => $details->subject,
+                'deleted' => $deleted,
+                'answered' => $answered,
+                'draft' => $draft,
+                'body' => $body,
             );
         }
 
@@ -216,9 +216,9 @@ class Imap {
         // Get general mailbox information.
         $info = imap_status($this->mailbox, $this->address, SA_ALL);
         $mailInfo = array(
-            "unread" => $info->unseen,
-            "recent" => $info->recent,
-            "total" => $info->messages,
+            'unread' => $info->unseen,
+            'recent' => $info->recent,
+            'total' => $info->messages,
         );
         return $mailInfo;
     }
@@ -282,7 +282,7 @@ class Imap {
      * @see imap_rfc822_parse_adrlist().
      */
     public function parseAddresses($addresses) {
-        return imap_rfc822_parse_adrlist($addresses, "#");
+        return imap_rfc822_parse_adrlist($addresses, '#');
     }
 
     /**
@@ -331,14 +331,14 @@ class Imap {
     public function getBodyType($msgId, $numeric = false) {
         // See imap_fetchstructure() documentation for explanation.
         $types = array(
-            0 => "Text",
-            1 => "Multipart",
-            2 => "Message",
-            3 => "Application",
-            4 => "Audio",
-            5 => "Image",
-            6 => "Video",
-            7 => "Other",
+            0 => 'Text',
+            1 => 'Multipart',
+            2 => 'Message',
+            3 => 'Application',
+            4 => 'Audio',
+            5 => 'Image',
+            6 => 'Video',
+            7 => 'Other',
         );
 
         // Get the structure of the message.
@@ -366,12 +366,12 @@ class Imap {
     public function getEncodingType($msgId, $numeric = false) {
         // See imap_fetchstructure() documentation for explanation.
         $encodings = array(
-            0 => "7BIT",
-            1 => "8BIT",
-            2 => "BINARY",
-            3 => "BASE64",
-            4 => "QUOTED-PRINTABLE",
-            5 => "OTHER",
+            0 => '7BIT',
+            1 => '8BIT',
+            2 => 'BINARY',
+            3 => 'BASE64',
+            4 => 'QUOTED-PRINTABLE',
+            5 => 'OTHER',
         );
 
         // Get the structure of the message.
