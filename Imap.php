@@ -9,9 +9,7 @@
  * Usage examples can be found in the included README file, and all methods
  * should have adequate documentation to get you started.
  *
- * The php5-imap library must be present for this class to work, and it has been
- * tested with PHP 5.3+, and Gmail. Everything should work fine on slightly
- * older versions of PHP, and most IMAP-compliant email services should be fine.
+ * Minimum requirements: PHP 5.3.x, php5-imap
  *
  * @version 1.0-beta1
  * @author Josh Grochowski (josh[at]kastang[dot]com).
