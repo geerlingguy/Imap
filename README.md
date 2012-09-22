@@ -9,6 +9,12 @@ Connect to an IMAP account by creating a new Imap object with the required
 parameters:
 
 ```php
+$host = 'imap.example.com';
+$user = 'johndoe';
+$pass = '12345';
+$port = 993;
+$ssl = true;
+$folder = 'INBOX';
 $mailbox = new Imap($host, $user, $pass, $port, $ssl, $folder);
 ```
 
