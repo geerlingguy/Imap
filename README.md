@@ -1,7 +1,7 @@
 
 # Imap
 
-A simple PHP wrapper class for frequently used php-imap functions.
+A simple PHP wrapper class for PHP's IMAP-related email handling functions.
 
 ## Usage
 
@@ -38,7 +38,7 @@ $id = 2;
 $mailbox->deleteMessage($id);
 ```
 
-More examples and information can be found in ImapExample.php.
+More methods and documentation can be found in the Imap.php class file.
 
 ## License
 

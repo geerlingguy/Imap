@@ -1,19 +1,21 @@
 <?
 
 /**
- * The Imap Class provides a wrapper for commonly used PHP imap functions. 
+ * The Imap PHP class provides a wrapper for commonly used PHP IMAP functions.
  *
- * Please read the ImapExample.php file for function details and examples. 
+ * This class was originally written by Josh Grochowski, and was reformatted and
+ * documented by Jeff Geerling.
  *
- * @required:
- *      *php5-imap library
- *      *PHP 5.3+ (older versions may work, tested with PHP 5.3). 
+ * Usage examples can be found in the included README file, and all methods
+ * should have adequate documentation to get you started.
  *
- * @tested:
- *      *Tested with Gmail SSL imap server. 
+ * The php5-imap library must be present for this class to work, and it has been
+ * tested with PHP 5.3+, and Gmail. Everything should work fine on slightly
+ * older versions of PHP, and most IMAP-compliant email services should be fine.
  *
- * @author Josh Grochowski (josh[at]kastang[dot]com)
- *
+ * @version 1.0-beta1
+ * @author Josh Grochowski (josh[at]kastang[dot]com).
+ * @author Jeff Geerling (geerlingguy).
  */
 
 class Imap {
@@ -23,43 +25,36 @@ class Imap {
     private $pass;
     private $port;
     private $folder;
-    private $ssl;   
+    private $ssl;
 
     private $address;
     private $mailbox;
 
     /**
-     * This constructor is called when the Imap object is created. 
+     * Called when the Imap object is created.
      *
-     * An example of the constructor fields are listed below:
+     * Sample of a complete address: {imap.gmail.com:993/imap/ssl}INBOX
      *
-     * Sample complete address:
-     * {imap.gmail.com:993/imap/ssl}INBOX
+     * @param $host (string)
+     *   The IMAP hostname. Example: imap.gmail.com
+     * @param $port (int)
+     *   Example: 933
+     * @param $ssl (bool)
+     *   TRUE to use SSL, FALSE for no SSL.
+     * @param $folder (string)
+     *   IMAP Folder to open.
+     * @param $user (string)
+     *   Username used for connection. Gmail uses full username@gmail.com, but
+     *   many providers simply use username.
+     * @param $pass (string)
+     *   Account password.
      *
-     * @param $host = "imap.gmail.com"
-     * @param $port = 933
-     * @param $ssl = true (false if ssl isn't being used).
-     * @param $folder = "INBOX"
-     *
-     * @param $user -
-     *      Case 1: username@gmail.com
-     *      Cast 2: username
-     *
-     *      Case 1 is the usual $user, depending on the imap provider,
-     *      Case 2 may be used. Please consult with your imap provider to see
-     *      which username string to use. 
-     * 
-     * @param $pass - Account Password. 
-     *
-     * @return None. 
-     *
+     * @return (empty)
      */
-    public function __construct($host, $user, $pass, $port, $ssl=true, $folder='INBOX') {
-
-        if((!isset($host)) || (!isset($user)) || (!isset($pass)) || (!isset($port)) ||
-            (!isset($ssl)) || (!isset($folder))) {
-                throw Exception("Error: All Constructor values require a non NULL input.");
-            }
+    public function __construct($host, $user, $pass, $port, $ssl = true, $folder = 'INBOX') {
+        if ((!isset($host)) || (!isset($user)) || (!isset($pass)) || (!isset($port))) {
+            throw Exception("Error: All Constructor values require a non NULL input.");
+        }
 
         $this->host = $host;
         $this->user = $user;
@@ -69,324 +64,358 @@ class Imap {
         $this->ssl = $ssl;
 
         $this->changeLoginInfo($host, $user, $pass, $port, $ssl, $folder);
-
     }
 
     /**
-     * This function will change imap folders and reconnect to the existing server. 
+     * Change IMAP folders and reconnect to the server.
      *
-     * @return None. 
+     * @param $folderName
+     *   The name of the folder to change to.
+     *
+     * @return (empty)
      */
     public function changeFolder($folderName) {
-
-        if($this->ssl) {
-            $m = '{'.$this->host.':'.$this->port.'/imap/ssl}'.$folderName;
+        if ($this->ssl) {
+            $address = '{' . $this->host . ':' . $this->port . '/imap/ssl}' . $folderName;
         } else {
-            $m = '{'.$this->host.':'.$this->port.'/imap}'.$folderName;
+            $address = '{' . $this->host . ':' . $this->port . '/imap}' . $folderName;
         }
 
-        $this->address = $m;
+        $this->address = $address;
         $this->reconnect();
     }
 
     /**
-     * This function will log in to a different imap server. 
+     * Log into an IMAP server.
      *
-     * @params - Please see __constructor function for parameter details. 
+     * This method is called on the initialization of the class (see
+     * __construct()), and whenever you need to log into a different account.
      *
-     * @return none. 
+     * Please see __construct() for parameter info.
+     *
+     * @return (empty)
+     *
+     * @throws Exception when IMAP can't connect.
      */
     public function changeLoginInfo($host, $user, $pass, $port, $ssl, $folder) {
-
-        if($ssl) {
-            $m = '{'.$host.':'.$port.'/imap/ssl}'.$folder;
+        if ($ssl) {
+            $address = '{' . $host . ':' . $port . '/imap/ssl}' . $folder;
         } else {
-            $m = '{'.$host.':'.$port.'/imap}'.$folder;
+            $address = '{' . $host . ':' . $port . '/imap}' . $folder;
         }
 
-        $this->address = $m;
+        // Set the new address.
+        $this->address = $address;
 
-        $mailbox = imap_open($m, $user, $pass) or die("Error: ".imap_last_error());
-        $this->mailbox=$mailbox;
-
+        // Open new IMAP connection
+        if ($mailbox = imap_open($address, $user, $pass)) {
+          $this->mailbox = $mailbox;
+        } else {
+          throw new Exception("Error: " . imap_last_error());
+        }
     }
 
     /**
-     * This function will return an associative array containing detailed information 
-     * about a given $msgId. 
+     * Returns an associative array with detailed information about a given
+     * message.
      *
-     * @return An associative array containing to, from, cc, bss, reply, sender, datesent, 
-     * subject, deleted, answered, draft, and body status for a given $msgId. 
+     * @param $msgId (int)
+     *   Message id.
+     *
+     * @return Associative array with keys (strings unless otherwise noted):
+     *   to
+     *   from
+     *   cc
+     *   bcc
+     *   reply_to
+     *   sender
+     *   datesent
+     *   subject
+     *   deleted (bool)
+     *   answered (bool)
+     *   draft (bool)
+     *   body
      */
     public function getDetailedMessageInfo($msgId) {
+        $this->tickle();
 
-        if(!$this->isConnectionAlive()) {
-            $this->reconnect();
-        }
+        // Get message details.
+        $details = imap_headerinfo($this->mailbox, $msgId);
+        if ($details) {
+            // Get some basic variables.
+            $deleted = ($details->Deleted == 'D');
+            $answered = ($details->Answered == 'A');
+            $draft = ($details->Draft == 'X');
 
-        $details = imap_headerinfo($this->mailbox,$msgId);
-
-        if($details) {
-
-            if($details->Deleted == 'D') {
-                $deleted = true;
-            } else {
-                $deleted = false;
+            // Get the message body.
+            $body = imap_fetchbody($this->mailbox, $msgId, 1.2);
+            if (!strlen($body) > 0) {
+                $body = imap_fetchbody($this->mailbox, $msgId, 1);
             }
 
-            if($details->Answered == 'A') {
-                $answered = true;
-            } else {
-                $answered = false;
-            }
-
-            if($details->Draft == 'X') {
-                $draft = true;
-            } else {
-                $draft = false;
-            }
-
-            $body = imap_fetchbody($this->mailbox,$msgId, 1.2);
-            if(!strlen($body)>0) {
-                $body = imap_fetchbody($this->mailbox,$msgId, 1);
-            }
-
-            $detailArray = array(
+            $msgArray = array(
                 "to" => $details->toaddress,
                 "from" => $details->fromaddress,
                 "cc" => $details->ccaddress,
                 "bcc" => $details->bbcaddress,
-                "reply" => $details->reply_toaddress,
+                "reply_to" => $details->reply_toaddress,
                 "sender" => $details->senderaddress,
                 "datesent" => $details->date,
                 "subject" => $details->subject,
-                "deleted" => (int)$deleted,
-                "answered" => (int)$answered,
-                "draft" => (int)$draft,
-                "body" => $body
+                "deleted" => $deleted,
+                "answered" => $answered,
+                "draft" => $draft,
+                "body" => $body,
             );
         }
 
-        return $detailArray;
+        return $msgArray;
     }
 
     /**
-     * This function will return an associative array containing the subject of every
-     * email in the $folder along with its associated message id. 
+     * Returns an associative array with email subjects and message ids for all
+     * messages in the active $folder.
      *
-     * The purpose of this function is to help associate Subjects with Message Ids. 
+     * @return Associative array with message id as key and subject as value.
      */
     public function getMessageIds() {
+        $this->tickle();
 
-        if(!$this->isConnectionAlive()) {
-            $this->reconnect();
-        }
-
-        $overview = imap_fetch_overview($this->mailbox, "1:".imap_num_msg($this->mailbox), 0);
+        // Fetch overview of mailbox.
+        $overviews = imap_fetch_overview($this->mailbox, "1:" . imap_num_msg($this->mailbox), 0);
         $messageArray = array();
 
-        foreach($overview as $o) {
+        // Loop through message overviews, build message array.
+        foreach($overviews as $overview) {
+            $messageArray[$overview->msgno] = $overview->subject;
 
-            $tmp = array(
-                "id" => $o->msgno,
-                "subject" => $o->subject."\n"
-            );
-
-            array_push($messageArray, $tmp);
+            // Below is legacy code. After testing above, remove.
+            // $tmp = array(
+            //     "id" => $overview->msgno,
+            //     "subject" => $overview->subject. "\n",
+            // );
+            // 
+            // array_push($messageArray, $tmp);
         }
 
         return $messageArray;
     }
 
     /**
-     * This function will return an associative array containing the number of
-     * recent, unread, and total messages.
+     * Return an associative array containing the number of recent, unread, and
+     * total messages.
+     *
+     * @return Associative array with keys:
+     *   unread
+     *   recent
+     *   total
      */
     public function getInboxInformation() {
+        $this->tickle();
 
-        if(!$this->isConnectionAlive()) {
-            $this->reconnect();
-        }
-
+        // Get general mailbox information.
         $info = imap_status($this->mailbox, $this->address, SA_ALL);
-
         $mailInfo = array(
             "unread" => $info->unseen,
             "recent" => $info->recent,
-            "total" => $info->messages
+            "total" => $info->messages,
         );
-
         return $mailInfo;
     }
 
 
     /**
      * Deletes an email matching the specified $msgId.
+     *
+     * @param $msgId (int)
+     *   Message id.
+     *
+     * @return (empty)
+     *
+     * @throws Exception when message can't be deleted.
      */
     public function deleteMessage($msgId) {
-        
-        if(!$this->isConnectionAlive()) {
-            $this->reconnect();
-        }
+        $this->tickle();
 
-        imap_delete($this->mailbox, 2) or die("Error in deleteMessage: ". imap_last_error());
+        // Attempt to delete message.
+        if (!imap_delete($this->mailbox, 2)) {
+          throw new Exception("Error in deleteMessage: " . imap_last_error());
+        }
     }
 
     /**
-     * @param $text - Base64 encoded Text. 
+     * Decodes Base64-encoded text.
      *
-     * @return - Decoded text. 
+     * @param $text (string)
+     *   Base64 encoded text to convert.
+     *
+     * @return (string)
+     *   Decoded text.
      */
     public function decodeBase64($text) {
-
-        if(!$this->isConnectionAlive()) {
-            $this->reconnect();
-        }
-
+        $this->tickle();
         return imap_base64($text);
     }
 
     /**
-     * Takes in a string of Email Addresses and returns an Array of
-     * addresses. 
+     * Takes in a string of email addresses and returns an array of addresses
+     * as objects. For example, passing in 'John Doe <johndoe@sample.com>'
+     * returns the following array:
      *
-     * Example:
-     * "craigslist.org" <noreply@craigslist.org>
+     *     Array (   
+     *       [0] => stdClass Object (
+     *         [mailbox] => johndoe
+     *         [host] => sample.com
+     *         [personal] => John Doe
+     *       )
+     *     )
      *
-     * will return:
-     * Array
-     * (   
-     *     [0] => stdClass Object
-     *          (   
-     *              [mailbox] => noreply
-     *              [host] => craigslist.org
-     *              [personal] => craigslist.org
-     *          )
+     * You can pass in a string with as many addresses as you'd like, and each
+     * address will be parsed into a new object in the returned array.
      *
-     *)
+     * @param $addresses (string)
+     *   String of one or more email addresses to be parsed.
      *
-     * Note: More then one Email Address can be entered as a parameter. An 
-     * array containing N array entries (where N is the number of emails entered) 
-     * will be returned.
+     * @return (array)
+     *   Array of parsed email addresses, as objects.
      *
+     * @see imap_rfc822_parse_adrlist().
      */
-    public function parseAddresses($adr) {
-        $adrArray = imap_rfc822_parse_adrlist($adr, "#");
-        return $adrArray;
+    public function parseAddresses($addresses) {
+        return imap_rfc822_parse_adrlist($addresses, "#");
     }
 
     /**
-     * This function will create an Email Address to RFC822 specifications. 
+     * Create an email address to RFC822 specifications.
      *
-     * @param $username - name before the @ sign in an email  address. 
-     * @param $host - address after the @ sign in an email address.
-     * @param $name - name of the person
+     * @param $username (string)
+     *   Name before the @ sign in an email address (example: 'johndoe').
+     * @param $host (string)
+     *   Address after the @ sign in an email address (example: 'sample.com').
+     * @param $name (string)
+     *   Name of the entity (example: 'John Doe').
      *
-     * @return Email Address in the following format:
-     *  FirstName LastName <username@host.com>
+     * @return (string) Email Address in the following format:
+     *  'John Doe <johndoe@sample.com>'
      */
     public function createAddress($username, $host, $name) {
-        $adr = imap_rfc822_write_address($username, $host, $name);
-        return $adr;
+        return imap_rfc822_write_address($username, $host, $name);
     }
 
     /**
-     * @return: The structure returned by imap_fetchstructure in an unmodified
-     * form. 
+     * Returns structured information for a given message id.
      *
-     * @see imap_fetchstructure (http://www.php.net/manual/en/function.imap-fetchstructure.php)
+     * @param $msgId
+     *   Message id for which structure will be returned.
+     *
+     * @return (object)
+     *   See imap_fetchstructure() return values for details.
+     *
+     * @see imap_fetchstructure().
      */
     public function getStructure($msgId) {
-
-        $structure = imap_fetchstructure($this->mailbox, $msgId);
-        return $structure;
+        return imap_fetchstructure($this->mailbox, $msgId);
     }
 
     /**
-     * This function will return the Primary Body Time of a given $msgId. 
+     * Returns the primary body type for a given message id.
      *
-     * @param $num: 
-     *      -true = The Numerical representation of the primary body type
-     *      will be returned.
-     *      -false(default) = A Word representation of the primary body type
-     *      will be returned.
+     * @param $msgId (int)
+     *   Message id.
+     * @param $numeric (bool)
+     *   Set to true for a numerical body type.
+     *
+     * @return (mixed)
+     *   Integer value of body type if numeric, string if not numeric.
      */
-    public function getBodyType($msgId, $num=false) {
-
-        $typeArray = array(
-            0 => "Text", 1 => "Multipart",
-            2 => "Message", 3 => "Application",
-            4 => "Audio", 5 => "Image",
-            6 => "Video", 7 => "Other"
+    public function getBodyType($msgId, $numeric = false) {
+        // See imap_fetchstructure() documentation for explanation.
+        $types = array(
+            0 => "Text",
+            1 => "Multipart",
+            2 => "Message",
+            3 => "Application",
+            4 => "Audio",
+            5 => "Image",
+            6 => "Video",
+            7 => "Other",
         );
 
-        $struct = $this->getStructure($msgId);
+        // Get the structure of the message.
+        $structure = $this->getStructure($msgId);
 
-        if($num) {
-            return $struct->type;
+        // Return a number or a string, depending on the $numeric value.
+        if ($numeric) {
+            return $structure->type;
         } else {
-            return $typeArray[$struct->type];
+            return $types[$structure->type];
         }
     }
 
     /**
-     * This function will return the encoding type of a given $msgId.
+     * Returns the encoding type of a given $msgId.
      *
-     * @param $num: 
-     *      -true = The Numerical representation of the primary encoding type
-     *      will be returned.
-     *      -false(default) = A word representation of the primary encoding type
-     *      will be returned.
+     * @param $msgId (int)
+     *   Message id.
+     * @param $numeric (bool)
+     *   Set to true for a numerical encoding type.
+     *
+     * @return (mixed)
+     *   Integer value of body type if numeric, string if not numeric.
      */
-    public function getEncodingType($msgId, $num=false) {
-
-        $encodingArray = array(
-            0 => "7BIT", 1 => "8BIT",
-            2 => "BINARY", 3 => "BASE64",
-            4 => "QUOTED-PRINTABLE", 5 => "OTHER"
+    public function getEncodingType($msgId, $numeric = false) {
+        // See imap_fetchstructure() documentation for explanation.
+        $encodings = array(
+            0 => "7BIT",
+            1 => "8BIT",
+            2 => "BINARY",
+            3 => "BASE64",
+            4 => "QUOTED-PRINTABLE",
+            5 => "OTHER",
         );
 
-        $struct = $this->getStructure($msgId);
+        // Get the structure of the message.
+        $structure = $this->getStructure($msgId);
 
-        if($num) {
-            return $struct->encoding;
+        // Return a number or a string, depending on the $numeric value.
+        if ($numeric) {
+            return $structure->encoding;
         } else {
-            return $encodingArray[$struct->encoding];
+            return $encodings[$structure->encoding];
         }
     }
 
     /**
-     * Closes an acitve imap connection.
+     * Closes an active IMAP connection.
+     *
+     * @return (empty)
      */
     public function disconnect() {
         imap_close($this->mailbox);
     }
 
-    /*
-     * The below functions are used internally, if you see a need to use the below functions - remove
-     * 'private' from the functions. 
-     */
-
     /**
-     * If the connection to the imap server was lost, reconnect.
+     * Reconnect to the IMAP server.
+     *
+     * @return (empty)
+     *
+     * @throws Exception when IMAP can't reconnect.
      */
     private function reconnect() {
-        $this->mailbox = imap_open($this->address, $this->user, $this->pass) or die("Reconnection Failure: 
-            ".imap_last_error());
+      $this->mailbox = imap_open($this->address, $this->user, $this->pass);
+      if (!$this->mailbox) {
+        throw new Exception("Reconnection Failure: " . imap_last_error());
+      }
     }
 
     /**
-     * Checks to see if the connection to the imap server is still alive. 
+     * Checks to see if the connection is alive. If not, reconnects to server.
+     *
+     * @return (empty)
      */
-    private function isConnectionAlive() {
-        $conn = imap_ping($this->mailbox);
-
-        if($conn) {
-            return true;
-        } else {
-            return false;
+    private function tickle() {
+        if (!imap_ping($this->mailbox)) {
+            $this->reconnect;
         }
     }
 }
-
-?>
