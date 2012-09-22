@@ -117,7 +117,7 @@ class Imap {
      * Returns an associative array with detailed information about a given
      * message.
      *
-     * @param $msgId (int)
+     * @param $messageId (int)
      *   Message id.
      *
      * @return Associative array with keys (strings unless otherwise noted):
@@ -134,11 +134,11 @@ class Imap {
      *   draft (bool)
      *   body
      */
-    public function getDetailedMessageInfo($msgId) {
+    public function getDetailedMessageInfo($messageId) {
         $this->tickle();
 
         // Get message details.
-        $details = imap_headerinfo($this->mailbox, $msgId);
+        $details = imap_headerinfo($this->mailbox, $messageId);
         if ($details) {
             // Get some basic variables.
             $deleted = ($details->Deleted == 'D');
@@ -146,9 +146,9 @@ class Imap {
             $draft = ($details->Draft == 'X');
 
             // Get the message body.
-            $body = imap_fetchbody($this->mailbox, $msgId, 1.2);
+            $body = imap_fetchbody($this->mailbox, $messageId, 1.2);
             if (!strlen($body) > 0) {
-                $body = imap_fetchbody($this->mailbox, $msgId, 1);
+                $body = imap_fetchbody($this->mailbox, $messageId, 1);
             }
 
             $msgArray = array(
@@ -223,16 +223,16 @@ class Imap {
 
 
     /**
-     * Deletes an email matching the specified $msgId.
+     * Deletes an email matching the specified $messageId.
      *
-     * @param $msgId (int)
+     * @param $messageId (int)
      *   Message id.
      *
      * @return (empty)
      *
      * @throws Exception when message can't be deleted.
      */
-    public function deleteMessage($msgId) {
+    public function deleteMessage($messageId) {
         $this->tickle();
 
         // Attempt to delete message.
@@ -303,7 +303,7 @@ class Imap {
     /**
      * Returns structured information for a given message id.
      *
-     * @param $msgId
+     * @param $messageId
      *   Message id for which structure will be returned.
      *
      * @return (object)
@@ -311,14 +311,14 @@ class Imap {
      *
      * @see imap_fetchstructure().
      */
-    public function getStructure($msgId) {
-        return imap_fetchstructure($this->mailbox, $msgId);
+    public function getStructure($messageId) {
+        return imap_fetchstructure($this->mailbox, $messageId);
     }
 
     /**
      * Returns the primary body type for a given message id.
      *
-     * @param $msgId (int)
+     * @param $messageId (int)
      *   Message id.
      * @param $numeric (bool)
      *   Set to true for a numerical body type.
@@ -326,7 +326,7 @@ class Imap {
      * @return (mixed)
      *   Integer value of body type if numeric, string if not numeric.
      */
-    public function getBodyType($msgId, $numeric = false) {
+    public function getBodyType($messageId, $numeric = false) {
         // See imap_fetchstructure() documentation for explanation.
         $types = array(
             0 => 'Text',
@@ -340,7 +340,7 @@ class Imap {
         );
 
         // Get the structure of the message.
-        $structure = $this->getStructure($msgId);
+        $structure = $this->getStructure($messageId);
 
         // Return a number or a string, depending on the $numeric value.
         if ($numeric) {
@@ -351,9 +351,9 @@ class Imap {
     }
 
     /**
-     * Returns the encoding type of a given $msgId.
+     * Returns the encoding type of a given $messageId.
      *
-     * @param $msgId (int)
+     * @param $messageId (int)
      *   Message id.
      * @param $numeric (bool)
      *   Set to true for a numerical encoding type.
@@ -361,7 +361,7 @@ class Imap {
      * @return (mixed)
      *   Integer value of body type if numeric, string if not numeric.
      */
-    public function getEncodingType($msgId, $numeric = false) {
+    public function getEncodingType($messageId, $numeric = false) {
         // See imap_fetchstructure() documentation for explanation.
         $encodings = array(
             0 => '7BIT',
@@ -373,7 +373,7 @@ class Imap {
         );
 
         // Get the structure of the message.
-        $structure = $this->getStructure($msgId);
+        $structure = $this->getStructure($messageId);
 
         // Return a number or a string, depending on the $numeric value.
         if ($numeric) {
