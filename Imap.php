@@ -25,6 +25,7 @@ class Imap {
     private $folder;
     private $ssl;
 
+    private $baseAddress;
     private $address;
     private $mailbox;
 
@@ -97,12 +98,15 @@ class Imap {
      */
     public function changeLoginInfo($host, $user, $pass, $port, $ssl, $folder) {
         if ($ssl) {
-            $address = '{' . $host . ':' . $port . '/imap/ssl}' . $folder;
+            $baseAddress = '{' . $host . ':' . $port . '/imap/ssl}';
+            $address = $baseAddress . $folder;
         } else {
-            $address = '{' . $host . ':' . $port . '/imap}' . $folder;
+            $baseAddress = '{' . $host . ':' . $port . '/imap}';
+            $address = $baseAddress . $folder;
         }
 
-        // Set the new address.
+        // Set the new address and the base address.
+        $this->baseAddress = $baseAddress;
         $this->address = $address;
 
         // Open new IMAP connection
@@ -127,14 +131,17 @@ class Imap {
      *   bcc
      *   reply_to
      *   sender
-     *   datesent
+     *   date_sent
      *   subject
      *   deleted (bool)
      *   answered (bool)
      *   draft (bool)
      *   body
+     *   size (int)
+     *
+     * @throws Exception when message with given id can't be found.
      */
-    public function getDetailedMessageInfo($messageId) {
+    public function getMessage($messageId) {
         $this->tickle();
 
         // Get message details.
@@ -151,23 +158,56 @@ class Imap {
                 $body = imap_fetchbody($this->mailbox, $messageId, 1);
             }
 
-            $msgArray = array(
+            // Build the message.
+            $message = array(
                 'to' => $details->toaddress,
                 'from' => $details->fromaddress,
-                'cc' => $details->ccaddress,
-                'bcc' => $details->bbcaddress,
-                'reply_to' => $details->reply_toaddress,
+                'cc' => isset($details->ccaddress) ? $details->ccaddress : '',
+                'bcc' => isset($details->bccaddress) ? $details->bccaddress : '',
+                'reply_to' => isset($details->reply_toaddress) ? $details->reply_toaddress : '',
                 'sender' => $details->senderaddress,
-                'datesent' => $details->date,
+                'date_sent' => $details->date,
                 'subject' => $details->subject,
                 'deleted' => $deleted,
                 'answered' => $answered,
                 'draft' => $draft,
                 'body' => $body,
+                'size' => $details->Size,
             );
         }
+        else {
+          throw new Exception("Message could not be found: " . imap_last_error());
+        }
 
-        return $msgArray;
+        return $message;
+    }
+
+    /**
+     * Deletes an email matching the specified $messageId.
+     *
+     * @param $messageId (int)
+     *   Message id.
+     * @param $immediate (bool)
+     *   Set TRUE if message should be deleted immediately. Otherwise, message
+     *   will not be deleted until disconnect() is called. Normally, this is a
+     *   bad idea, as other message ids will change if a message is deleted.
+     *
+     * @return (empty)
+     *
+     * @throws Exception when message can't be deleted.
+     */
+    public function deleteMessage($messageId, $immediate = FALSE) {
+        $this->tickle();
+
+        // Mark message for deletion.
+        if (!imap_delete($this->mailbox, $messageId)) {
+          throw new Exception("Message could not be deleted: " . imap_last_error());
+        }
+
+        // Immediately delete the message if $immediate is TRUE.
+        if ($immediate) {
+          imap_expunge($this->mailbox);
+        }
     }
 
     /**
@@ -186,14 +226,6 @@ class Imap {
         // Loop through message overviews, build message array.
         foreach($overviews as $overview) {
             $messageArray[$overview->msgno] = $overview->subject;
-
-            // Below is legacy code. After testing above, remove.
-            // $tmp = array(
-            //     "id" => $overview->msgno,
-            //     "subject" => $overview->subject. "\n",
-            // );
-            // 
-            // array_push($messageArray, $tmp);
         }
 
         return $messageArray;
@@ -208,7 +240,7 @@ class Imap {
      *   recent
      *   total
      */
-    public function getInboxInformation() {
+    public function getCurrentMailboxInfo() {
         $this->tickle();
 
         // Get general mailbox information.
@@ -221,24 +253,26 @@ class Imap {
         return $mailInfo;
     }
 
-
     /**
-     * Deletes an email matching the specified $messageId.
+     * Return an array of objects containing mailbox information.
      *
-     * @param $messageId (int)
-     *   Message id.
-     *
-     * @return (empty)
-     *
-     * @throws Exception when message can't be deleted.
+     * @return Array of mailbox names.
      */
-    public function deleteMessage($messageId) {
+    public function getMailboxInfo() {
         $this->tickle();
 
-        // Attempt to delete message.
-        if (!imap_delete($this->mailbox, 2)) {
-          throw new Exception("Error in deleteMessage: " . imap_last_error());
+        // Get all mailbox information.
+        $mailboxInfo = imap_getmailboxes($this->mailbox, $this->baseAddress, '*');
+        $mailboxes = array();
+        foreach ($mailboxInfo as $mailbox) {
+            // Remove baseAddress from mailbox name.
+            $mailboxes[] = array(
+              'mailbox' => $mailbox->name,
+              'name' => str_replace($this->baseAddress, '', $mailbox->name),
+            );
         }
+
+        return $mailboxes;
     }
 
     /**
@@ -389,7 +423,8 @@ class Imap {
      * @return (empty)
      */
     public function disconnect() {
-        imap_close($this->mailbox);
+        // Close the connection, deleting all messages marked for deletion.
+        imap_close($this->mailbox, CL_EXPUNGE);
     }
 
     /**

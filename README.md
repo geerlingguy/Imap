@@ -18,10 +18,16 @@ $folder = 'INBOX';
 $mailbox = new Imap($host, $user, $pass, $port, $ssl, $folder);
 ```
 
+Get a list of all mailboxes:
+
+```php
+$mailbox->getMailboxInfo();
+```
+
 Get an array of message counts (recent, unread, and total):
 
 ```php
-$mailbox->getInboxInformation();
+$mailbox->getCurrentMailboxInfo();
 ```
 
 Get an associative array of message ids and subjects:
@@ -34,7 +40,7 @@ Load details for a message by id.
 
 ```php
 $id = 2;
-$mailbox->getDetailedMessageInfo($id);
+$mailbox->getMessage($id);
 ```
 
 Delete a message by id.
