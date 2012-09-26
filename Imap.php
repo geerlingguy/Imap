@@ -290,6 +290,24 @@ class Imap {
     }
 
     /**
+     * Strips quotes (older messages) from a message body.
+     *
+     * This function removes any lines that begin with a quote character (>).
+     * Note that quotes in reply bodies will also be removed by this function,
+     * so only use this function if you're okay with this behavior.
+     *
+     * @param $message (string)
+     *
+     * @return (string)
+     *   Same as message passed in, but with all quoted text removed.
+     *
+     * @see http://stackoverflow.com/a/12611562/100134
+     */
+    public function cleanReplyEmail($message) {
+        return preg_replace('/(^\w.+:\n)?(^>.*(\n|$))+/mi', '', $body);
+    }
+
+    /**
      * Takes in a string of email addresses and returns an array of addresses
      * as objects. For example, passing in 'John Doe <johndoe@sample.com>'
      * returns the following array:
