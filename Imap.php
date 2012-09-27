@@ -304,10 +304,13 @@ class Imap {
      * @see http://stackoverflow.com/a/12611562/100134
      */
      public function cleanReplyEmail($message) {
-         // Remove any quoted lines beginning with '>'.
-         $message = preg_replace('/(^\w.+:\n)?(^>.*(\n|$))+/mi', '', $message);
-         // Remove any lines beginning with 'On' and ending with 'wrote:'.
-         $message = preg_replace("/^On.*wrote:$/m", '', $message);
+         // Remove quoted lines (lines that begin with '>').
+         $message = preg_replace("/(^\w.+:\n)?(^>.*(\n|$))+/mi", '', $message);
+
+         // Remove lines beginning with 'On' and ending with 'wrote:' (matches
+         // Mac OS X Mail, Gmail).
+         $message = preg_replace("/^(On).*(wrote:).*$/sm", '', $message);
+
          return $message;
      }
 
