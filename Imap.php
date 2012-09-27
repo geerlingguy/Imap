@@ -166,6 +166,14 @@ class Imap {
         $body = imap_fetchbody($this->mailbox, $messageId, 1);
       }
 
+      // Get the message body encoding.
+      $encoding = $this->getEncodingType($messageId);
+
+      // Decode body into plaintext if it is Base64-encoded.
+      if ($encoding == 'BASE64') {
+        $body = $this->decodeBase64($body);
+      }
+
       // Build the message.
       $message = array(
         'raw_header' => $raw_header,
