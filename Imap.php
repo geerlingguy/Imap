@@ -169,9 +169,12 @@ class Imap {
       // Get the message body encoding.
       $encoding = $this->getEncodingType($messageId);
 
-      // Decode body into plaintext if it is Base64-encoded.
+      // Decode body into plaintext (8bit, 7bit, and binary are exempt).
       if ($encoding == 'BASE64') {
         $body = $this->decodeBase64($body);
+      }
+      elseif ($encoding == 'QUOTED-PRINTABLE') {
+        $body = $this->decodeQuotedPrintable($body);
       }
 
       // Build the message.
@@ -322,6 +325,20 @@ class Imap {
   public function decodeBase64($text) {
     $this->tickle();
     return imap_base64($text);
+  }
+
+  /**
+   * Decodes quoted-printable text.
+   *
+   * @param $text (string)
+   *   Quoted printable text to convert.
+   *
+   * @return (string)
+   *   Decoded text.
+   */
+  public function decodeQuotedPrintable($text) {
+    $this->tickle();
+    return quoted_printable_decode($text);
   }
 
   /**
