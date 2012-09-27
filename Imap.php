@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * The Imap PHP class provides a wrapper for commonly used PHP IMAP functions.
