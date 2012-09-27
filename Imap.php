@@ -527,6 +527,7 @@ class Imap {
       'Subject: Auto Response', // Yahoo mail.
       'Out of office', // Generic.
       'Out of the office', // Generic.
+      'Auto-reply', // Generic.
       'autoreply', // Generic.
     );
 
