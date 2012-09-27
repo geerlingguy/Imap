@@ -1,3 +1,4 @@
+<img src="http://github.com/geerlingguy/Imap/raw/1.x/Resources/Imap-Logo.png" alt="IMAP for PHP Logo" />
 
 # Imap
 
