@@ -125,6 +125,7 @@ class Imap {
    *   Message id.
    *
    * @return Associative array with keys (strings unless otherwise noted):
+   *   raw_header
    *   to
    *   from
    *   cc
@@ -138,6 +139,7 @@ class Imap {
    *   draft (bool)
    *   body
    *   size (int)
+   *   auto_response (bool)
    *
    * @throws Exception when message with given id can't be found.
    */
@@ -147,6 +149,12 @@ class Imap {
     // Get message details.
     $details = imap_headerinfo($this->mailbox, $messageId);
     if ($details) {
+      // Get the raw headers.
+      $raw_header = imap_fetchheader($this->mailbox, $messageId);
+
+      // Detect whether the message is an autoresponse.
+      $autoresponse = $this->detectAutoresponder($raw_header);
+
       // Get some basic variables.
       $deleted = ($details->Deleted == 'D');
       $answered = ($details->Answered == 'A');
@@ -160,6 +168,7 @@ class Imap {
 
       // Build the message.
       $message = array(
+        'raw_header' => $raw_header,
         'to' => $details->toaddress,
         'from' => $details->fromaddress,
         'cc' => isset($details->ccaddress) ? $details->ccaddress : '',
@@ -173,6 +182,7 @@ class Imap {
         'draft' => $draft,
         'body' => $body,
         'size' => $details->Size,
+        'auto_response' => $autoresponse,
       );
     }
     else {
@@ -492,6 +502,42 @@ class Imap {
     if (!imap_ping($this->mailbox)) {
         $this->reconnect;
     }
+  }
+
+  /**
+   * Determines whether the given message is from an auto-responder.
+   *
+   * This method checks whether the header contains any auto response headers as
+   * outlined in RFC 3834, and also checks to see if the subject line contains
+   * certain strings set by different email providers to indicate an automatic
+   * response.
+   *
+   * @see http://tools.ietf.org/html/rfc3834
+   *
+   * @param $header (string)
+   *   Message header as returned by imap_fetchheader().
+   *
+   * @return (bool)
+   *   TRUE if this message comes from an autoresponder.
+   */
+  private function detectAutoresponder($header) {
+    $autoresponder_strings = array(
+      'X-Autoresponse:', // Other email servers.
+      'X-Autorespond:', // LogSat server.
+      'Subject: Auto Response', // Yahoo mail.
+      'Out of office', // Generic.
+      'Out of the office', // Generic.
+      'autoreply', // Generic.
+    );
+
+    // Check for presence of different autoresponder strings.
+    foreach ($autoresponder_strings as $string) {
+      if (strpos($header, $string) !== false) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }
