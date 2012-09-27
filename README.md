@@ -1,7 +1,20 @@
 
 # Imap
 
-A simple PHP wrapper class for PHP's IMAP-related email handling functions.
+A PHP wrapper class for PHP's IMAP-related email handling functions.
+
+This class includes many convenience methods to help take the headache out of
+dealing with emails in PHP. For example, email handling method names make more
+sense (e.g. `getMessage`, `deleteMessage`, and `moveMessage` along with a
+message id, rather than passing around IMAP streams, using many
+difficult-to-remember `imap_*` functions).
+
+Also, this class adds some convenient helpful information to emails, like the
+full message header (in `raw_header`), and whether or not the email was sent by
+an autoresponder (see `detectAutoresponder` for details).
+
+If you have any issues or feature suggestions, please post a new issue on
+GitHub.
 
 ## Usage
 
@@ -48,6 +61,12 @@ Delete a message by id.
 ```php
 $id = 2;
 $mailbox->deleteMessage($id);
+```
+
+Disconnect from the server (necessary after deleting or moving messages):
+
+```php
+$mailbox->disconnect();
 ```
 
 More methods and documentation can be found in the Imap.php class file.
