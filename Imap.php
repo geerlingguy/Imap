@@ -211,6 +211,23 @@ class Imap {
     }
 
     /**
+     * Moves an email into the given mailbox.
+     *
+     * @param $messageId (int)
+     *   Message id.
+     * @param $folder (string)
+     *   The name of the folder (mailbox) into which messages should be moved.
+     *   $folder could either be the folder name or 'INBOX.foldername'.
+     *
+     * @return (bool)
+     *   Returns TRUE on success, FALSE on failure.
+     */
+    public function moveMessage($messageId, $folder) {
+        $messageRange = $messageId . ':' . $messageId;
+        return imap_mail_move($this->mailbox, $messageRange, $folder);
+    }
+
+    /**
      * Returns an associative array with email subjects and message ids for all
      * messages in the active $folder.
      *
