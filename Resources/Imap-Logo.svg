@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1"
+	 id="svg3239" sodipodi:docname="New document 12" inkscape:version="0.48.2 r9819" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="227px" height="100px"
+	 viewBox="0 0 227 100" enable-background="new 0 0 227 100" xml:space="preserve">
+<sodipodi:namedview  id="base" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="0.35" inkscape:cx="50.000002" inkscape:cy="49.999998" inkscape:document-units="px" inkscape:current-layer="layer1" showgrid="false" fit-margin-top="0" fit-margin-left="0" fit-margin-right="0" fit-margin-bottom="0" inkscape:window-width="496" inkscape:window-height="419" inkscape:window-x="4" inkscape:window-y="49" inkscape:window-maximized="0">
+	</sodipodi:namedview>
+<path id="path4018" sodipodi:ry="127.14286" sodipodi:rx="127.14286" sodipodi:cy="553.79077" sodipodi:type="arc" sodipodi:cx="244.28572" fill="#333333" d="
+	M90.244,50c0,21.95-17.794,39.744-39.744,39.744C28.551,89.744,10.756,71.95,10.756,50c0-21.95,17.795-39.744,39.744-39.744
+	C72.45,10.256,90.244,28.05,90.244,50z"/>
+<g id="g4022" transform="translate(74.996652,97.491445)">
+	
+		<rect id="rect4024" x="-49.497" y="-64.991" fill="#333333" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" width="50" height="35"/>
+	
+		<path id="path4026" sodipodi:cy="386.87546" sodipodi:type="star" sodipodi:cx="403.53983" inkscape:transform-center-y="-7.2776215" inkscape:rounded="0" inkscape:randomized="0" inkscape:flatsided="true" sodipodi:arg2="1.5707963" sodipodi:arg1="0.52359878" sodipodi:r2="37.682076" sodipodi:r1="75.364151" sodipodi:sides="3" fill="#333333" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="
+		M-0.004-30.058h-48.984l24.492-21.833L-0.004-30.058z"/>
+	
+		<path id="path4028" sodipodi:cy="386.87546" sodipodi:type="star" sodipodi:cx="403.53983" inkscape:transform-center-y="7.2776224" inkscape:rounded="0" inkscape:randomized="0" inkscape:flatsided="true" sodipodi:arg2="1.5707963" sodipodi:arg1="0.52359878" sodipodi:r2="37.682076" sodipodi:r1="75.364151" sodipodi:sides="3" fill="#333333" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="
+		M-49.489-64.113H0.496l-24.992,21.832L-49.489-64.113z"/>
+</g>
+<text transform="matrix(1 0 0 1 94.5 68.5)" font-family="'OCRAStd'" font-size="49" letter-spacing="-4">IMAP</text>
+<text transform="matrix(1 0 0 1 163.9385 83)" fill="#333333" font-family="'OCRAStd'" font-size="12" letter-spacing="-1">for PHP</text>
+</svg>
