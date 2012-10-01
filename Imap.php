@@ -52,7 +52,7 @@ class Imap {
    */
   public function __construct($host, $user, $pass, $port, $ssl = true, $folder = 'INBOX') {
     if ((!isset($host)) || (!isset($user)) || (!isset($pass)) || (!isset($port))) {
-      throw Exception("Error: All Constructor values require a non NULL input.");
+      throw new Exception("Error: All Constructor values require a non NULL input.");
     }
 
     $this->host = $host;
@@ -138,6 +138,7 @@ class Imap {
    *   answered (bool)
    *   draft (bool)
    *   body
+   *   original_encoding
    *   size (int)
    *   auto_response (bool)
    *
@@ -176,6 +177,12 @@ class Imap {
       elseif ($encoding == 'QUOTED-PRINTABLE') {
         $body = $this->decodeQuotedPrintable($body);
       }
+      elseif ($encoding == '8BIT') {
+        $body = $this->decode8Bit($body);
+      }
+      elseif ($encoding == '7BIT') {
+        $body = $this->decode7Bit($body);
+      }
 
       // Build the message.
       $message = array(
@@ -192,6 +199,7 @@ class Imap {
         'answered' => $answered,
         'draft' => $draft,
         'body' => $body,
+        'original_encoding' => $encoding,
         'size' => $details->Size,
         'auto_response' => $autoresponse,
       );
@@ -337,8 +345,35 @@ class Imap {
    *   Decoded text.
    */
   public function decodeQuotedPrintable($text) {
-    $this->tickle();
     return quoted_printable_decode($text);
+  }
+
+  /**
+   * Decodes 8-Bit text.
+   *
+   * @param $text (string)
+   *   8-Bit text to convert.
+   *
+   * @return (string)
+   *   Decoded text.
+   */
+  public function decode8Bit($text) {
+    return quoted_printable_decode(imap_8bit($text));
+  }
+
+  /**
+   * Decodes 7-Bit text.
+   *
+   * @param $text (string)
+   *   7-Bit text to convert.
+   *
+   * @return (string)
+   *   Decoded text.
+   *
+   * @todo - Decode the text somehow.
+   */
+  public function decode7Bit($text) {
+    return $text;
   }
 
   /**
@@ -362,6 +397,12 @@ class Imap {
      // Remove lines beginning with 'On' and ending with 'wrote:' (matches
      // Mac OS X Mail, Gmail).
      $message = preg_replace("/^(On).*(wrote:).*$/sm", '', $message);
+
+     // Remove lines like '----- Original Message -----' (some other clients).
+     $message = preg_replace("/^-----.*$/mi", '', $message);
+
+     // Remove lines like '____________' (some other clients).
+     $message = preg_replace("/^____________.*$/mi", '', $message);
 
      return $message;
    }
@@ -552,7 +593,9 @@ class Imap {
       'Subject: Auto Response', // Yahoo mail.
       'Out of office', // Generic.
       'Out of the office', // Generic.
+      'out of the office', // Generic.
       'Auto-reply', // Generic.
+      'Autoreply', // Generic.
       'autoreply', // Generic.
     );
 
