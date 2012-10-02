@@ -364,15 +364,47 @@ class Imap {
   /**
    * Decodes 7-Bit text.
    *
+   * PHP seems to think that most emails are 7BIT-encoded, therefore this
+   * decoding method assumes that text passed through may actually be base64-
+   * encoded, quoted-printable encoded, or just plain text. Instead of passing
+   * the email directly through a particular decoding function, this method
+   * runs through a bunch of common encoding schemes to try to decode everything
+   * and simply end up with something *resembling* plain text.
+   *
+   * Results are not guaranteed, but it's pretty good at what it does.
+   *
    * @param $text (string)
    *   7-Bit text to convert.
    *
    * @return (string)
    *   Decoded text.
-   *
-   * @todo - Decode the text somehow.
    */
   public function decode7Bit($text) {
+    // If there are no spaces on the first line, assume that the body is
+    // actually base64-encoded, and decode it.
+    $lines = explode("\r\n", $text);
+    $first_line_words = explode(' ', $lines[0]);
+    if ($first_line_words[0] == $lines[0]) {
+      $text = base64_decode($text);
+    }
+
+    // Manually convert common encoded characters into their UTF-8 equivalents.
+    $characters = array(
+      '=20' => ' ', // space.
+      '=E2=80=99' => "'", // single quote.
+      '=0A' => "\r\n", // line break.
+      '=A0' => ' ', // non-breaking space.
+      '=C2=A0' => ' ', // non-breaking space.
+      "=\r\n" => '', // joined line.
+      '=E2=80=A6' => '…', // ellipsis.
+      '=E2=80=A2' => '•', // bullet.
+    );
+
+    // Loop through the encoded characters and replace any that are found.
+    foreach ($characters as $key => $value) {
+      $text = str_replace($key, $value, $text);
+    }
+
     return $text;
   }
 
