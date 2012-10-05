@@ -440,10 +440,10 @@ class Imap {
      $message = preg_replace("/^____________.*$/mi", '', $message);
 
      // Remove blocks of text with 'From, Sent, To, Subject' on newlines.
-     $text = preg_replace("/From:.*^(Sent:).*^(To:).*^(Subject:).*/sm", '', $text);
+     $message = preg_replace("/From:.*^(Sent:).*^(To:).*^(Subject:).*/sm", '', $message);
 
      // Remove blocks of text with 'From, To, Sent, Subject' on newlines.
-     $text = preg_replace("/From:.*^(To:).*^(Sent:).*^(Subject:).*/sm", '', $text);
+     $message = preg_replace("/From:.*^(To:).*^(Sent:).*^(Subject:).*/sm", '', $message);
 
      return $message;
    }
