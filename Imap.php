@@ -393,11 +393,14 @@ class Imap {
       '=20' => ' ', // space.
       '=E2=80=99' => "'", // single quote.
       '=0A' => "\r\n", // line break.
+      '=0D' => "\r\n", // carriage return.
       '=A0' => ' ', // non-breaking space.
       '=C2=A0' => ' ', // non-breaking space.
       "=\r\n" => '', // joined line.
       '=E2=80=A6' => '…', // ellipsis.
       '=E2=80=A2' => '•', // bullet.
+      '=E2=80=93' => '–', // en dash.
+      '=E2=80=94' => '—', // em dash.
     );
 
     // Loop through the encoded characters and replace any that are found.
@@ -435,6 +438,12 @@ class Imap {
 
      // Remove lines like '____________' (some other clients).
      $message = preg_replace("/^____________.*$/mi", '', $message);
+
+     // Remove blocks of text with 'From, Sent, To, Subject' on newlines.
+     $text = preg_replace("/From:.*^(Sent:).*^(To:).*^(Subject:).*/sm", '', $text);
+
+     // Remove blocks of text with 'From, To, Sent, Subject' on newlines.
+     $text = preg_replace("/From:.*^(To:).*^(Sent:).*^(Subject:).*/sm", '', $text);
 
      return $message;
    }
