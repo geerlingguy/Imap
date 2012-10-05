@@ -397,10 +397,10 @@ class Imap {
       '=A0' => ' ', // non-breaking space.
       '=C2=A0' => ' ', // non-breaking space.
       "=\r\n" => '', // joined line.
-      '=E2=80=A6' => '…', // ellipsis.
-      '=E2=80=A2' => '•', // bullet.
-      '=E2=80=93' => '–', // en dash.
-      '=E2=80=94' => '—', // em dash.
+      '=E2=80=A6' => '&hellip;', // ellipsis.
+      '=E2=80=A2' => '&bull;', // bullet.
+      '=E2=80=93' => '&ndash;', // en dash.
+      '=E2=80=94' => '&mdash;', // em dash.
     );
 
     // Loop through the encoded characters and replace any that are found.
@@ -419,13 +419,22 @@ class Imap {
    * so only use this function if you're okay with this behavior.
    *
    * @param $message (string)
+   *   The message to be cleaned.
+   * @param $plain_text_output (bool)
+   *   Set to TRUE to also run the text through strip_tags() (helpful for
+   *   cleaning up HTML emails).
    *
    * @return (string)
    *   Same as message passed in, but with all quoted text removed.
    *
    * @see http://stackoverflow.com/a/12611562/100134
    */
-   public function cleanReplyEmail($message) {
+   public function cleanReplyEmail($message, $plain_text_output = FALSE) {
+     // Strip markup if $plain_text_output is set.
+     if ($plain_text_output) {
+       $message = strip_tags($message);
+     }
+
      // Remove quoted lines (lines that begin with '>').
      $message = preg_replace("/(^\w.+:\n)?(^>.*(\n|$))+/mi", '', $message);
 
@@ -440,10 +449,12 @@ class Imap {
      $message = preg_replace("/^____________.*$/mi", '', $message);
 
      // Remove blocks of text with 'From, Sent, To, Subject' on newlines.
-     $message = preg_replace("/From:.*^(Sent:).*^(To:).*^(Subject:).*/sm", '', $message);
 
-     // Remove blocks of text with 'From, To, Sent, Subject' on newlines.
-     $message = preg_replace("/From:.*^(To:).*^(Sent:).*^(Subject:).*/sm", '', $message);
+     // Remove blocks of text with formats like:
+     //   - 'From: Sent: To: Subject:'
+     //   - 'From: To: Sent: Subject:'
+     //   - 'From: Date: To: Reply-to: Subject:'
+     $message = preg_replace("/From:.*^(To:).*^(Subject:).*/sm", '', $message);
 
      // Remove any remaining whitespace.
      $message = trim($message);
