@@ -445,6 +445,9 @@ class Imap {
      // Remove blocks of text with 'From, To, Sent, Subject' on newlines.
      $message = preg_replace("/From:.*^(To:).*^(Sent:).*^(Subject:).*/sm", '', $message);
 
+     // Remove any remaining whitespace.
+     $message = trim($message);
+
      return $message;
    }
 
