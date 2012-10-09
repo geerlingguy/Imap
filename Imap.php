@@ -391,10 +391,12 @@ class Imap {
     // Manually convert common encoded characters into their UTF-8 equivalents.
     $characters = array(
       '=20' => ' ', // space.
+      '=2C' => ',', // comma.
       '=E2=80=99' => "'", // single quote.
       '=0A' => "\r\n", // line break.
       '=0D' => "\r\n", // carriage return.
       '=A0' => ' ', // non-breaking space.
+      '=B9' => '$sup1', // 1 superscript.
       '=C2=A0' => ' ', // non-breaking space.
       "=\r\n" => '', // joined line.
       '=E2=80=A6' => '&hellip;', // ellipsis.
@@ -443,12 +445,11 @@ class Imap {
      $message = preg_replace("/^(On).*(wrote:).*$/sm", '', $message);
 
      // Remove lines like '----- Original Message -----' (some other clients).
-     $message = preg_replace("/^-----.*$/mi", '', $message);
+     // Also remove lines like '--- On ... wrote:' (some other clients).
+     $message = preg_replace("/^---.*$/mi", '', $message);
 
      // Remove lines like '____________' (some other clients).
      $message = preg_replace("/^____________.*$/mi", '', $message);
-
-     // Remove blocks of text with 'From, Sent, To, Subject' on newlines.
 
      // Remove blocks of text with formats like:
      //   - 'From: Sent: To: Subject:'
