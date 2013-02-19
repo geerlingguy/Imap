@@ -16,6 +16,8 @@
  * @author Jeff Geerling (geerlingguy).
  */
 
+namespace JJG\Imap;
+
 class Imap {
 
   private $host;
