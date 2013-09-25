@@ -9,6 +9,14 @@
  * Usage examples can be found in the included README file, and all methods
  * should have adequate documentation to get you started.
  *
+ * Quick Start:
+ * @code
+ *   include 'path/to/Imap/JJG/Imap.php';
+ *   use \JJG\Imap as Imap;
+ *   $mailbox = new Imap($host, $user, $pass, $port, $ssl, $folder);
+ *   $mailbox->getMailboxInfo();
+ * @endcode
+ *
  * Minimum requirements: PHP 5.3.x, php5-imap
  *
  * @version 1.0-beta2
@@ -16,7 +24,7 @@
  * @author Jeff Geerling (geerlingguy).
  */
 
-namespace JJG\Imap;
+namespace JJG;
 
 class Imap {
 
