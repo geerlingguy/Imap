@@ -1,0 +1,14 @@
+{
+    "name": "geerlingguy/imap",
+    "description": "A PHP wrapper class for PHP's IMAP-related email handling functions.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jeff Geerling",
+            "email": "jeff@jeffgeerling.com"
+        }
+    ],
+    "autoload": {
+        "classmap": [ "Imap.php" ]
+    }
+}
