@@ -9,6 +9,6 @@
         }
     ],
     "autoload": {
-        "classmap": [ "Imap.php" ]
+        "classmap": [ "JJG/Imap.php" ]
     }
 }
