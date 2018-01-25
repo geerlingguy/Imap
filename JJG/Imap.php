@@ -263,7 +263,7 @@ class Imap {
    */
   public function moveMessage($messageId, $folder) {
     $messageRange = $messageId . ':' . $messageId;
-    return imap_mail_move($this->mailbox, $messageRange, '{sslmail.webguyz.net:143/imap}Questionable');
+    return imap_mail_move($this->mailbox, $messageRange, $folder);
   }
 
   /**
