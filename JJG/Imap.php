@@ -17,9 +17,8 @@
  *   $mailbox->getMailboxInfo();
  * @endcode
  *
- * Minimum requirements: PHP 5.3.x, php5-imap
+ * Minimum requirements: PHP 5.6.x, php5-imap
  *
- * @version 1.0-beta2
  * @author Josh Grochowski (josh[at]kastang[dot]com).
  * @author Jeff Geerling (geerlingguy).
  */
